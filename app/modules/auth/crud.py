@@ -1,5 +1,5 @@
 from sqlalchemy.ext.asyncio import AsyncSession
-from sqlalchemy import select
+from sqlalchemy import select, delete
 from datetime import UTC, datetime, timedelta
 
 from app.modules.auth.models import User, RefreshToken
@@ -61,3 +61,9 @@ async def get_refresh_token(db: AsyncSession, token: str) -> RefreshToken | None
         select(RefreshToken).where(RefreshToken.token == token).with_for_update()
     )
     return result.scalar_one_or_none()
+
+
+async def delete_all_user_refresh_tokens(db: AsyncSession, user_id: int):
+    await db.execute(
+        delete(RefreshToken).where(RefreshToken.user_id == user_id)
+    )
