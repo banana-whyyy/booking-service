@@ -10,7 +10,6 @@ from auth.crud import(
     register_refresh_token_db,
     delete_all_user_refresh_tokens
 )
-from auth.models import RefreshToken
 from auth.schemas import UserCreate, UserLogin, UserResponse, TokenResponse
 from auth.security import create_access_token, create_refresh_token, verify_password, decode_jwt
 from app.database import get_db
