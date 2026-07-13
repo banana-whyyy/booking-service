@@ -1,6 +1,6 @@
 from sqlalchemy.ext.asyncio import AsyncSession
 from sqlalchemy import select, delete
-from datetime import UTC, datetime, timedelta
+from datetime import timezone, datetime, timedelta
 
 from app.modules.auth.models import User, RefreshToken
 from app.modules.auth.schemas import UserCreate
@@ -38,12 +38,11 @@ async def create_user(db: AsyncSession, user: UserCreate) -> User:
     )
     db.add(db_user)
     await db.flush()
-    await db.refresh(db_user)
     return db_user
 
 
 async def register_refresh_token_db(db: AsyncSession, token: str, user_id: int) -> RefreshToken:
-    expire_at = datetime(UTC) + timedelta(days=settings.refresh_token_expire_days)
+    expire_at = datetime.now(timezone.utc) + timedelta(days=settings.refresh_token_expire_days)
     db_refresh = RefreshToken(
         user_id=user_id,
         expires_at=expire_at,
@@ -52,6 +51,7 @@ async def register_refresh_token_db(db: AsyncSession, token: str, user_id: int) 
 
     db.add(db_refresh)
     await db.flush()
+    await db.commit()
     await db.refresh(db_refresh)
     return db_refresh
 
