@@ -29,4 +29,4 @@ class RefreshToken(Base):
     user_id: Mapped[int] = mapped_column(ForeignKey("users.id"))
     expires_at: Mapped[datetime] = mapped_column(DateTime(timezone=True))
     is_used: Mapped[bool] = mapped_column(default=False)
-    used_at: Mapped[datetime | None]
+    used_at: Mapped[datetime | None] = mapped_column(DateTime(timezone=True))
