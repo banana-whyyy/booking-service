@@ -3,8 +3,7 @@ from datetime import datetime
 from decimal import Decimal
 
 
-
-class RoomCreate(BaseModel):
+class RoomBase(BaseModel):
     name: str = Field(..., min_length=3, max_length=100)
     description: str | None = None
     price_hour: Decimal = Field(gt=0)
@@ -12,7 +11,12 @@ class RoomCreate(BaseModel):
     has_projector: bool = False
     has_whiteboard: bool = False
 
-class RoomResponse(RoomCreate):
+
+class RoomCreate(RoomBase):
+    pass
+
+
+class RoomResponse(RoomBase):
     id: int
     created_at: datetime
     model_config = {"from_attributes": True}
