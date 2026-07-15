@@ -28,7 +28,7 @@ async def get_current_user(session: SessionDep, token: TokenDep) -> User:
         token_type = payload["type"]
         if token_type != "access":
             raise cred_exceptions
-    except JWTError:
+    except (JWTError, ValueError):
         raise cred_exceptions
     
     result = await session.execute(
@@ -37,6 +37,6 @@ async def get_current_user(session: SessionDep, token: TokenDep) -> User:
     user = result.scalars().first()
 
     if user is None: 
-        cred_exceptions
+        raise cred_exceptions
 
     return user

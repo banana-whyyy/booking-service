@@ -51,8 +51,6 @@ async def register_refresh_token_db(db: AsyncSession, token: str, user_id: int) 
 
     db.add(db_refresh)
     await db.flush()
-    await db.commit()
-    await db.refresh(db_refresh)
     return db_refresh
 
 

@@ -35,7 +35,6 @@ async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
     
     new_user = await create_user(db, user)
     
-    db.add(new_user)
     await db.commit()
     await db.refresh(new_user)
     return new_user
@@ -55,6 +54,7 @@ async def login(req: UserLogin,db: AsyncSession = Depends(get_db)):
     refresh_token = create_refresh_token(data=payload)
 
     await register_refresh_token_db(db, token=refresh_token, user_id=user.id)
+    await db.commit()
 
     return TokenResponse(
         access_token=access_token,
@@ -78,7 +78,7 @@ async def refresh(refresh_token: str, db: AsyncSession = Depends(get_db)):
             detail="Wrong token type"
         )
     
-    if payload.get("is_used") == True:
+    if token.is_used:
         async with db.begin():
             await delete_all_user_refresh_tokens(db, user_id=token.user_id)
         raise HTTPException(
@@ -88,10 +88,13 @@ async def refresh(refresh_token: str, db: AsyncSession = Depends(get_db)):
     
     new_payload = {"sub": str(token.user_id)}
     token.is_used = True
+
     token.used_at = datetime.now(UTC)
     access_token = create_access_token(data=new_payload)
-    refresh_token = create_refresh_token(data=new_payload)
-    await register_refresh_token_db(db, token=refresh_token, user_id=token.user_id)
+    new_refresh_token = create_refresh_token(data=new_payload)
+
+    await register_refresh_token_db(db, token=new_refresh_token, user_id=token.user_id)
+    await db.commit()
     
     return TokenResponse(
         access_token=access_token,
