@@ -10,7 +10,7 @@ if TYPE_CHECKING:
     from app.modules.bookings.models import Booking
 
 
-class Rooms(Base):
+class Room(Base):
     __tablename__ = "rooms"
 
     id: Mapped[int] = mapped_column(primary_key=True)

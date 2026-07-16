@@ -7,7 +7,7 @@ from app.database import Base
 
 from typing import TYPE_CHECKING
 if TYPE_CHECKING:
-    from app.modules.rooms.models import Rooms
+    from app.modules.rooms.models import Room
 
 
 class BookingStatus(str, enum.Enum):
@@ -28,4 +28,4 @@ class Booking(Base):
     time_end: Mapped[datetime] = mapped_column(DateTime(timezone=True))
 
     status: Mapped[BookingStatus] = mapped_column(default=BookingStatus.PENDING)
-    room: Mapped["Rooms"] = relationship(back_populates="bookings", lazy="joined")
+    room: Mapped["Room"] = relationship(back_populates="bookings", lazy="joined")
