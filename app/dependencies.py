@@ -4,7 +4,7 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .database import get_db
-from modules.auth.models import User 
+from modules.auth.models import User, UserRole
 from modules.auth.crud import get_user
 from modules.auth.security import decode_jwt 
 
@@ -15,7 +15,7 @@ reusable_oath2 = OAuth2PasswordBearer(tokenUrl="/auth/login")
 async def get_current_user(session: AsyncSession = Depends(get_db), token: str = Depends(reusable_oath2)) -> User:
     cred_exceptions = HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Could not validate credentials"
+            detail="Could not validate credentials",
         )
     
     try:
@@ -33,3 +33,12 @@ async def get_current_user(session: AsyncSession = Depends(get_db), token: str =
         raise cred_exceptions
 
     return user
+
+
+async def get_admin_user(current_user: User = Depends(get_current_user)) -> User:
+    if current_user.role != UserRole.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Admin access required",
+        )
+    return current_user
