@@ -19,6 +19,11 @@ async def get_room(db: AsyncSession, room_id: int) -> Room | None:
     return result.scalar_one_or_none()
 
 
+async def get_room_by_name(db: AsyncSession, room_name: str) -> Room | None:
+    result = await db.execute(select(Room).where(Room.name == room_name))
+    return result.scalar_one_or_none()
+
+
 async def room_update(db: AsyncSession, room_id: int, room_update: RoomUpdate) -> Room | None:
     db_room = await get_room(db, room_id)
     if not db_room:
