@@ -15,7 +15,13 @@ def get_time_intersection_conditions(time_start: datetime, time_end: datetime):
 
 
 async def create_booking_secure(db: AsyncSession, booking_data: BookingCreate, user_id: int):
-    await db.execute(select(Room).where(Room.id == booking_data.room_id).with_for_update())
+    room = await db.execute(select(Room).where(Room.id == booking_data.room_id).with_for_update())
+    if not room.scalar_one_or_none():
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Room not found"
+        )
+
     conditions = get_time_intersection_conditions(booking_data.time_start, booking_data.time_end)
     intersects = await db.execute(
         select(Booking).where(
@@ -30,7 +36,7 @@ async def create_booking_secure(db: AsyncSession, booking_data: BookingCreate, u
             detail="This time is already booked"
         )
     
-    await create_booking(db, booking_data, user_id)
+    return await create_booking(db, booking_data, user_id)
 
 
 async def get_available_rooms(db: AsyncSession, filters: RoomFilterParams) -> list[Room]:
