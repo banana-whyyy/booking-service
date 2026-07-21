@@ -14,7 +14,7 @@ class Room(Base):
     __tablename__ = "rooms"
 
     id: Mapped[int] = mapped_column(primary_key=True)
-    name: Mapped[str] = mapped_column(String(256), index=True)
+    name: Mapped[str] = mapped_column(String(256), index=True, unique=True)
     description: Mapped[str | None] = mapped_column(Text)
     price_hour: Mapped[Decimal] = mapped_column(Numeric(precision=10, scale=2))
     capacity: Mapped[int] = mapped_column(default=5)
