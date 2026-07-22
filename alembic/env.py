@@ -9,6 +9,8 @@ from alembic import context
 
 from app.config import settings
 from app.modules.auth.models import User, RefreshToken
+from app.modules.rooms.models import Room
+from app.modules.bookings.models import Booking
 from app.database import Base
 
 # this is the Alembic Config object, which provides
