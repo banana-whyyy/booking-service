@@ -3,7 +3,7 @@ from datetime import datetime, timedelta
 from typing import Self
 
 from .models import BookingStatus
-from rooms.schemas import RoomResponse
+from ..rooms.schemas import RoomResponse
 
 
 class BookingBase(BaseModel):
