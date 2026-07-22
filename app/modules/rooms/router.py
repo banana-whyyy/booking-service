@@ -9,10 +9,10 @@ from ..auth.models import User
 from ..bookings.services import get_available_rooms
 
 
-room = APIRouter(tags=["rooms"], prefix="/rooms")
+router = APIRouter(tags=["rooms"], prefix="/rooms")
 
 
-@room.post("", response_model=RoomResponse, status_code=status.HTTP_201_CREATED)
+@router.post("", response_model=RoomResponse, status_code=status.HTTP_201_CREATED)
 async def add_room(
     room: RoomCreate,
     db: AsyncSession = Depends(get_db),
@@ -20,7 +20,7 @@ async def add_room(
 ):
     if await get_room_by_name(db, room.name):
         raise HTTPException(
-            status_code=status.HTTP_409_BAD_REQUEST,
+            status_code=status.HTTP_409_CONFLICT,
             detail="Room with this name already exists",
         )
     new_room = await create_room(db, room)
@@ -29,8 +29,8 @@ async def add_room(
     return new_room
 
 
-@room.get("/filters", response_model=list[RoomResponse])
-async def get_filters_rooms(
+@router.get("", response_model=list[RoomResponse])
+async def get_rooms(
     filters: RoomFilterParams = Depends(),
     db: AsyncSession = Depends(get_db),
 ):
@@ -38,7 +38,7 @@ async def get_filters_rooms(
     return rooms
 
 
-@room.get("/{room_id}", response_model=RoomResponse)
+@router.get("/{room_id}", response_model=RoomResponse)
 async def read_room(
     room_id: int,
     db: AsyncSession = Depends(get_db),
@@ -52,7 +52,7 @@ async def read_room(
     return room
 
 
-@room.put("/{room_id}", response_model=RoomResponse)
+@router.put("/{room_id}", response_model=RoomResponse)
 async def modify_room(
     room_id: int,
     room_modify: RoomUpdate,
@@ -65,10 +65,12 @@ async def modify_room(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Room not found",
         )
+    await db.commit()
+    await db.refresh(updated)
     return updated
 
 
-@room.delete("/{room_id}", status_code=status.HTTP_204_NO_CONTENT)
+@router.delete("/{room_id}", status_code=status.HTTP_204_NO_CONTENT)
 async def remove_room(
     room_id: int,
     db: AsyncSession = Depends(get_db),
