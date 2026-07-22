@@ -4,9 +4,9 @@ from fastapi.security import OAuth2PasswordBearer
 from sqlalchemy.ext.asyncio import AsyncSession
 
 from .database import get_db
-from modules.auth.models import User, UserRole
-from modules.auth.crud import get_user
-from modules.auth.security import decode_jwt 
+from app.modules.auth.models import User, UserRole
+from app.modules.auth.crud import get_user
+from app.modules.auth.security import decode_jwt 
 
 
 reusable_oath2 = OAuth2PasswordBearer(tokenUrl="/auth/login")
