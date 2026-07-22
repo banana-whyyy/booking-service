@@ -16,10 +16,10 @@ from app.database import get_db
 
 
 
-auth = APIRouter(tags=["auth"], prefix="/auth")
+router = APIRouter(tags=["auth"], prefix="/auth")
 
 
-@auth.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
+@router.post("/register", response_model=UserResponse, status_code=status.HTTP_201_CREATED)
 async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
     if await get_user_by_email(db, user.email):
         raise HTTPException(
@@ -40,7 +40,7 @@ async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
     return new_user
 
 
-@auth.post("/login", response_model=TokenResponse)
+@router.post("/login", response_model=TokenResponse)
 async def login(req: UserLogin,db: AsyncSession = Depends(get_db)):
     user = await get_user_by_email(db, req.email)
     if not user or not verify_password(req.password, user.hashed_password):
@@ -62,7 +62,7 @@ async def login(req: UserLogin,db: AsyncSession = Depends(get_db)):
     )
 
 
-@auth.post("/refresh", response_model=TokenResponse)
+@router.post("/refresh", response_model=TokenResponse)
 async def refresh(refresh_token: str, db: AsyncSession = Depends(get_db)):
     token = await get_refresh_token(db, refresh_token)
     if token is None:
