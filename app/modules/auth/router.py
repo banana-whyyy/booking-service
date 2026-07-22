@@ -1,4 +1,5 @@
 from fastapi import APIRouter, status, Depends, HTTPException
+from fastapi.security import OAuth2PasswordRequestForm
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import UTC, datetime
 
@@ -41,24 +42,27 @@ async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
 
 
 @router.post("/login", response_model=TokenResponse)
-async def login(req: UserLogin,db: AsyncSession = Depends(get_db)):
-    user = await get_user_by_email(db, req.email)
-    if not user or not verify_password(req.password, user.hashed_password):
+async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSession = Depends(get_db)):
+    user = await get_user_by_username(db, form_data.username)
+    if not user or not verify_password(form_data.password, user.hashed_password):
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Incorrect email or password"
         )
     
-    payload = {"sub": str(user.id)}
-    access_token = create_access_token(data=payload)
-    refresh_token = create_refresh_token(data=payload)
+    access_payload = {"user_id": user.id, "type": "access"}
+    access_token = create_access_token(data=access_payload)
+
+    refresh_payload = {"user_id": user.id, "type": "refresh"}
+    refresh_token = create_refresh_token(data=refresh_payload)
 
     await register_refresh_token_db(db, token=refresh_token, user_id=user.id)
     await db.commit()
 
     return TokenResponse(
         access_token=access_token,
-        refresh_token=refresh_token
+        refresh_token=refresh_token,
+        token_type="bearer"
     )
 
 
