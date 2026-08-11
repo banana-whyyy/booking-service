@@ -3,6 +3,7 @@ from sqlalchemy.ext.asyncio import AsyncSession
 
 from .models import Booking
 from .schemas import BookingCreate
+from ..auth.models import User
 
 
 async def create_booking(db: AsyncSession, booking_data: BookingCreate, user_id: int) -> Booking:
@@ -26,11 +27,14 @@ async def get_bookings(db: AsyncSession, user_id: int) -> list[Booking]:
     return list(result.all())
 
 
-async def delete_booking(db: AsyncSession, booking_id: int, user_id: int) -> bool:
-    db_booking = await get_booking(db, booking_id, user_id)
-    if db_booking is None: 
-        return False
+async def delete_booking(db: AsyncSession, booking_id: int, user: User) -> bool:
+    stmt = delete(Booking).where(Booking.id == booking_id)
 
-    await db.delete(db_booking)
-    await db.flush()
-    return True
+    if user.role != "admin":
+        stmt = stmt.where(Booking.user_id == user.id)
+
+    stmt = stmt.returning(Booking.id)
+    result = await db.execute(stmt)
+    deleted_it = result.scalar_one_or_none()
+
+    return deleted_it is not None
