@@ -6,7 +6,7 @@ from datetime import datetime
 from .crud import create_booking, get_booking
 from .schemas import BookingCreate
 from .models import Booking
-from ..auth.models import User
+from ..auth.models import User, UserRole
 from ..rooms.schemas import RoomFilterParams
 from ..rooms.models import Room
 
@@ -52,7 +52,7 @@ async def get_booking_secure(
             detail="Booking not found"
         )
 
-    if current_user.id != booking.user_id and current_user.role != "admin":
+    if current_user.id != booking.user_id and current_user.role != UserRole.ADMIN:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied"
@@ -61,10 +61,10 @@ async def get_booking_secure(
     return booking
 
 
-async def get_multi_booking_secure(db: AsyncSession, current_user: User):
+async def get_multi_bookings_secure(db: AsyncSession, current_user: User):
     stmt = select(Booking)
 
-    if not current_user.role != "admin":
+    if current_user.role != UserRole.ADMIN:
         stmt = stmt.where(current_user.id == Booking.user_id)
 
     result = await db.execute(stmt)

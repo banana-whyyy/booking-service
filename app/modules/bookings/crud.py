@@ -8,14 +8,14 @@ from ..auth.models import User
 
 async def create_booking(db: AsyncSession, booking_data: BookingCreate, user_id: int) -> Booking:
     booking = Booking(**booking_data.model_dump(), user_id=user_id)
-    await db.add(booking)
+    db.add(booking)
     await db.flush()
     return booking
 
 
-async def get_booking(db: AsyncSession, booking_id: int, user_id: int) -> Booking | None:
+async def get_booking(db: AsyncSession, booking_id: int) -> Booking | None:
     result = await db.execute(
-        select(Booking).where(Booking.id == booking_id, Booking.user_id == user_id)
+        select(Booking).where(Booking.id == booking_id)
     )
     return result.scalar_one_or_none()
 
