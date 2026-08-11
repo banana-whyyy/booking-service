@@ -3,8 +3,6 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
 
-from app.database import get_db
-from app.dependencies import get_current_user
 from .crud import create_booking, get_booking
 from .schemas import BookingCreate
 from .models import Booking
@@ -54,7 +52,7 @@ async def get_booking_secure(
             detail="Booking not found"
         )
 
-    if current_user.id != booking.user_id and not current_user.role == "admin":
+    if current_user.id != booking.user_id and current_user.role != "admin":
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN,
             detail="Access denied"
@@ -62,6 +60,15 @@ async def get_booking_secure(
 
     return booking
 
+
+async def get_multi_booking_secure(db: AsyncSession, current_user: User):
+    stmt = select(Booking)
+
+    if not current_user.role != "admin":
+        stmt = stmt.where(current_user.id == Booking.user_id)
+
+    result = await db.execute(stmt)
+    return list(result.scalars().all())
 
 
 async def get_available_rooms(db: AsyncSession, filters: RoomFilterParams) -> list[Room]:
