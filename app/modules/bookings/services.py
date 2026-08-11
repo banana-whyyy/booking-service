@@ -3,9 +3,12 @@ from sqlalchemy import select
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
 
-from .crud import create_booking
+from app.database import get_db
+from app.dependencies import get_current_user
+from .crud import create_booking, get_booking
 from .schemas import BookingCreate
 from .models import Booking
+from ..auth.models import User
 from ..rooms.schemas import RoomFilterParams
 from ..rooms.models import Room
 
@@ -37,6 +40,28 @@ async def create_booking_secure(db: AsyncSession, booking_data: BookingCreate, u
         )
     
     return await create_booking(db, booking_data, user_id)
+
+
+async def get_booking_secure(
+    db: AsyncSession,
+    booking_id: int,
+    current_user: User,
+):
+    booking = await get_booking(db, booking_id)
+    if not booking:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Booking not found"
+        )
+
+    if current_user.id != booking.user_id and not current_user.role == "admin":
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="Access denied"
+        ) 
+
+    return booking
+
 
 
 async def get_available_rooms(db: AsyncSession, filters: RoomFilterParams) -> list[Room]:
