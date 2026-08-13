@@ -1,15 +1,16 @@
 from pydantic_settings import BaseSettings, SettingsConfigDict
-from pydantic import Field
 
 
-# also append redis url
 class Settings(BaseSettings):
-    database_url: str = Field(alias="DATABASE_URL")
-    secret_key: str = Field(alias="SECRET_KEY")
+    database_url: str
+    sync_database_url: str 
+    redis_url: str 
+    secret_key: str 
+
     access_token_expire_minutes: int = 30
     refresh_token_expire_days: int = 30
     algorithm: str = "HS256"
 
-    model_config = SettingsConfigDict(env_file=".env", extra="ignore")
+    model_config = SettingsConfigDict(env_file=".env", env_file_encoding="utf-8", extra="ignore")
 
 settings = Settings()
