@@ -1,6 +1,5 @@
-[Русский](README.md) | **English**
-
 # Booking Service
+**English** | [Русский](README.md)
 
 ## Tech Stack
 - Python
