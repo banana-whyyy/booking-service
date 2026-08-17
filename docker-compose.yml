@@ -16,9 +16,9 @@ services:
     command: >
       sh -c "alembic upgrade head && uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload"
 
-  celery:
+  celery_worker:
     build: .
-    command: celery -A app.tasks worker --loglevel=info
+    command: celery -A app.celery_config:celery_app worker --loglevel=info
     env_file:
       - .env
     depends_on:
