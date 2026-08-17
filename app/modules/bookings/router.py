@@ -6,7 +6,8 @@ from .schemas import BookingCreate, BookingResponse
 from .crud import delete_booking
 from app.database import get_db
 from ..auth.models import User
-from app.dependencies import get_admin_user, get_current_user
+from app.dependencies import get_current_user
+from ..notifications.tasks import process_booking_notification
 
 
 router = APIRouter(tags=["bookings"], prefix="/bookings")
@@ -15,13 +16,23 @@ router = APIRouter(tags=["bookings"], prefix="/bookings")
 @router.post("", response_model=BookingResponse, status_code=status.HTTP_201_CREATED)
 async def add_booking(
     booking: BookingCreate,
-    user_id: int,
     db: AsyncSession = Depends(get_db),
-    _: User = Depends(get_admin_user),
+    current_user: User = Depends(get_current_user),
 ):
-    new_booking = await create_booking_secure(db, booking, user_id)
+    new_booking = await create_booking_secure(db, booking, current_user.id)
     await db.commit()
     await db.refresh(new_booking)
+    notification_payload = {
+        "booking_id": new_booking.id,
+        "username": current_user.username, 
+        "user_email": current_user.email,
+        "room_name": getattr(new_booking.room, "name", f"Room #{new_booking.room_id}"),
+        "time_start": new_booking.time_start.isoformat(),
+        "time_end": new_booking.time_end.isoformat(),
+    }
+
+    process_booking_notification.delay(notification_payload)
+
     return new_booking
 
 

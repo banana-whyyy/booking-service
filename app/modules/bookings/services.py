@@ -15,7 +15,11 @@ def get_time_intersection_conditions(time_start: datetime, time_end: datetime):
     return [Booking.time_start < time_end, Booking.time_end > time_start]
 
 
-async def create_booking_secure(db: AsyncSession, booking_data: BookingCreate, user_id: int):
+async def create_booking_secure(
+    db: AsyncSession,
+    booking_data: BookingCreate,
+    user_id: int
+) -> Booking:
     room = await db.execute(select(Room).where(Room.id == booking_data.room_id).with_for_update())
     if not room.scalar_one_or_none():
         raise HTTPException(
@@ -31,13 +35,27 @@ async def create_booking_secure(db: AsyncSession, booking_data: BookingCreate, u
         )
     )
 
+    bonus_cost: int = 100
     if intersects.scalar() is not None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
             detail="This time is already booked"
         )
+
+    db_user_result = await db.execute(
+        select(User).where(User.id == user_id).with_for_update()
+    )
+    db_user = db_user_result.scalar_one()
+
+    if db_user.bonus_balance < bonus_cost:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Not enough bonuses",
+        )
+
+    db_user.bonus_balance -= bonus_cost
     
-    return await create_booking(db, booking_data, user_id)
+    return await create_booking(db, booking_data, db_user.id)
 
 
 async def get_booking_secure(
