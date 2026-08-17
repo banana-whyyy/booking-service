@@ -19,6 +19,7 @@ class User(Base):
     email: Mapped[str] = mapped_column(String(255), unique=True, index=True)
     hashed_password: Mapped[str] = mapped_column(String(255))
     role: Mapped[UserRole] = mapped_column(default=UserRole.USER)
+    bonus_balance: Mapped[int] = mapped_column(default=1000, server_default="1000", nullable=False)
 
 
 class RefreshToken(Base):
