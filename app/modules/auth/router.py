@@ -102,5 +102,5 @@ async def refresh(refresh_token: str, db: AsyncSession = Depends(get_db)):
     
     return TokenResponse(
         access_token=access_token,
-        refresh_token=refresh_token
+        refresh_token=new_refresh_token
     )
