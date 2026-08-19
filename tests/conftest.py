@@ -11,6 +11,7 @@ from app.database import Base, get_db
 from app.main import app
 from app.modules.auth.models import UserRole
 from app.modules.auth.security import create_access_token, create_refresh_token, get_password_hash
+from app.modules.auth.crud import register_refresh_token_db
 
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -139,5 +140,21 @@ def admin_access_token(admin_user):
 
 
 @pytest.fixture
-def user_refresh_token(test_user):
-    return create_refresh_token({"user_id": test_user.id})
+async def user_refresh_token(db_session: AsyncSession, test_user):
+    fake_exp = datetime.now(timezone.utc) + timedelta(
+        days=30, 
+        minutes=-1
+    )
+    
+    payload = {
+        "sub": str(test_user.id),
+        "exp": fake_exp,
+        "test_fixture": True
+    }
+    
+    token_str = create_refresh_token(payload)
+    await register_refresh_token_db(db_session, token=token_str, user_id=test_user.id)
+    
+    await db_session.commit()
+
+    return token_str
