@@ -36,31 +36,16 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
         await conn.run_sync(Base.metadata.drop_all)
 
 
+
 @pytest.fixture
-async def user_client(db_session: AsyncSession, user_access_token: str) -> AsyncGenerator[AsyncClient, None]:
+async def client(db_session: AsyncSession):
     async def override_get_db():
         yield db_session
 
     app.dependency_overrides[get_db] = override_get_db
 
     transport = ASGITransport(app=app)
-    headers = {"Authorization": f"Bearer {user_access_token}"}
-    async with AsyncClient(transport=transport, base_url="http://test", headers=headers) as ac:
-        yield ac
-
-    app.dependency_overrides.clear()
-
-
-@pytest.fixture
-async def admin_client(db_session: AsyncSession, admin_access_token: str):
-    async def override_get_db():
-        yield db_session
-
-    app.dependency_overrides[get_db] = override_get_db
-
-    transport = ASGITransport(app=app)
-    headers = {"Authorization": f"Bearer {admin_access_token}"}
-    async with AsyncClient(transport=transport, base_url="http://test", headers=headers) as ac:
+    async with AsyncClient(transport=transport, base_url="http://test") as ac:
         yield ac
 
     app.dependency_overrides.clear()
