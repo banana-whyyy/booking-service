@@ -1,5 +1,7 @@
 import asyncio
 from collections.abc import AsyncGenerator
+from datetime import datetime, timedelta, timezone
+
 
 import pytest
 from httpx import ASGITransport, AsyncClient
@@ -66,6 +68,27 @@ async def test_room(db_session: AsyncSession):
     await db_session.commit()
     await db_session.refresh(room)
     return room
+
+
+@pytest.fixture
+async def test_booking(db_session: AsyncSession, test_room, test_user):
+    from app.modules.bookings.models import Booking
+
+    now = datetime.now(timezone.utc)
+    start_time = now + timedelta(days=1)
+    end_time = start_time + timedelta(hours=2)
+
+    booking = Booking(
+        room_id=test_room.id,
+        user_id=test_user.id,
+        time_start=start_time,
+        time_end=end_time,
+    )
+
+    db_session.add(booking)
+    await db_session.commit()
+    await db_session.refresh(booking)
+    return booking
 
 
 @pytest.fixture
