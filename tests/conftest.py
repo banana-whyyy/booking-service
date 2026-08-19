@@ -51,6 +51,22 @@ async def client(db_session: AsyncSession):
     app.dependency_overrides.clear()
 
 
+@pytest.fixture
+async def test_room(db_session: AsyncSession):
+    from app.modules.rooms.models import Room
+
+    room = Room(
+        name="Room1",
+        price_hour=15,
+        capacity=3,
+        has_projector=False,
+        has_whiteboard=False,
+    )
+    db_session.add(room)
+    await db_session.commit()
+    await db_session.refresh(room)
+    return room
+
 
 @pytest.fixture
 async def admin_user(db_session: AsyncSession):
