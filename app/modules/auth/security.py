@@ -28,8 +28,10 @@ def encode_jwt(
     to_encode = data.copy()
     if expires_delta is None:
         expires_delta = timedelta(minutes=15)
+        
     expire = datetime.now(UTC) + expires_delta
-    to_encode.update({"exp": expire, "type": token_type})
+    to_encode.update({"exp": int(expire.timestamp()), "type": token_type})
+
     encoded = jwt.encode(to_encode, secret_key, algorithm=algorithm)
     return encoded
 
