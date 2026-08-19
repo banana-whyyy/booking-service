@@ -2,10 +2,10 @@ import asyncio
 from collections.abc import AsyncGenerator
 from datetime import datetime, timedelta, timezone
 
-
 import pytest
 from httpx import ASGITransport, AsyncClient
 from sqlalchemy.ext.asyncio import AsyncSession, async_sessionmaker, create_async_engine
+from unittest.mock import patch
 
 from app.database import Base, get_db
 from app.main import app
@@ -37,6 +37,11 @@ async def db_session() -> AsyncGenerator[AsyncSession, None]:
     async with engine.begin() as conn:
         await conn.run_sync(Base.metadata.drop_all)
 
+
+@pytest.fixture(autouse=True)
+def mock_celery():
+    with patch("celery.app.task.Task.delay") as mock_delay:
+        yield mock_delay
 
 
 @pytest.fixture
@@ -98,7 +103,7 @@ async def admin_user(db_session: AsyncSession):
     user = User(
         username="admin",
         email="admin@example.com",
-        password=get_password_hash("123test"),
+        hashed_password=get_password_hash("123test"),
         role=UserRole.ADMIN,
     )
     db_session.add(user)
@@ -114,7 +119,7 @@ async def test_user(db_session: AsyncSession):
     user = User(
         username="testuser",
         email="test@example.com",
-        password=get_password_hash("testpass123"),
+        hashed_password=get_password_hash("testpass123"),
         role=UserRole.USER,
     )
     db_session.add(user)
@@ -124,20 +129,15 @@ async def test_user(db_session: AsyncSession):
 
 
 @pytest.fixture
-def admin_access_token(admin_user):
-    return create_access_token({"sub": str(admin_user.id)})
-
-
-@pytest.fixture
-def admin_refresh_token(admin_user):
-    return create_refresh_token({"sub": str(admin_user.id)})
-
-
-@pytest.fixture
 def user_access_token(test_user):
-    return create_access_token({"sub": str(test_user.id)})
+    return create_access_token({"user_id": test_user.id})
+
+
+@pytest.fixture
+def admin_access_token(admin_user):
+    return create_access_token({"user_id": admin_user.id})
 
 
 @pytest.fixture
 def user_refresh_token(test_user):
-    return create_refresh_token({"sub": str(test_user.id)})
+    return create_refresh_token({"user_id": test_user.id})
