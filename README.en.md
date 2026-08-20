@@ -55,7 +55,7 @@ cd booking-service
 cp .env.example .env
 
 # Run containers
-docker-compose up --build
+docker-compose up --build -d
 ```
 
 API will be available at: http://localhost:8000
@@ -168,6 +168,14 @@ curl -X POST http://localhost:8000/bookings \
 | ACCESS_TOKEN_EXPIRE_MINUTES | Access token expiration time | 30 (Minutes) |
 | REFRESH_TOKEN_EXPIRE_DAYS | Refresh token expiration time | 30 (Days) |
 
+## Testing
+``` bash 
+# Install dependencies for tests
+pip install -r requirements.txt
+
+# Run tests
+pytest -v 
+```
 
 ## Database Migrations
 ``` bash

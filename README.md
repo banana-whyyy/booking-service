@@ -13,6 +13,7 @@
 - **Защита от Race Conditions:** Бронирование комнат использует блокировки `SELECT FOR UPDATE` на уровне БД, исключая двойное бронирование.
 - **Фоновые задачи:** Отправка email-уведомлений и генерация PDF вынесены в фоновые воркеры Celery через Redis.
 - **JWT Auth:** Реализован механизм Access/Refresh токенов.
+- **Безопасность:** FastAPI работает в асинхронном режиме, пароли хэшируются через bcrypt 
 
 ## Структура проекта
 ```
@@ -50,11 +51,11 @@ app/
 git clone https://github.com/banana-whyyy/booking-service.git
 cd booking-service
 
-# Создать .env файл
+# Настроить переменные окружения
 cp .env.example .env
 
-# Запустить
-docker-compose up --build
+# Запустить сервисы
+docker compose up --build -d
 ```
 API будет доступен по адресу: http://localhost:8000
 
@@ -167,6 +168,16 @@ curl -X POST http://localhost:8000/bookings \
 | ALGORITHM | Алгоритм JWT | HS256 |
 | ACCESS_TOKEN_EXPIRE_MINUTES | Время жизни токена | 30 (Минут) |
 | REFRESH_TOKEN_EXPIRE_DAYS | Время жизни токена | 30 (Дней) |
+
+
+## Тестирование
+``` bash
+# Установить зависимости для тестов
+pip install -r requirements.txt
+
+# Запустить тесты
+pytest -v
+```
 
 
 ## Миграции
