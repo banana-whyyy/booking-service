@@ -35,7 +35,6 @@ async def create_booking_secure(
         )
     )
 
-    bonus_cost: int = 100
     if intersects.scalar() is not None:
         raise HTTPException(
             status_code=status.HTTP_409_CONFLICT,
@@ -47,13 +46,9 @@ async def create_booking_secure(
     )
     db_user = db_user_result.scalar_one()
 
-    if db_user.bonus_balance < bonus_cost:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail="Not enough bonuses",
-        )
+    if db_user.bonus_balance > 0:
+        db_user.bonus_balance = 0
 
-    db_user.bonus_balance -= bonus_cost
     
     return await create_booking(db, booking_data, db_user.id)
 
