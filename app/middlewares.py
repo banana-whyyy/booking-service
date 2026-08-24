@@ -44,8 +44,15 @@ def register_middlewares(app: FastAPI):
     app.add_middleware(SecurityHeaderMiddleware)
     app.add_middleware(
         CORSMiddleware,
-        allow_origins=["*"],
+        allow_origins=[
+            "http://135.106.192.113",
+            "http://book1ng.ru",
+            "https://book1ng.ru",
+            "http://www.book1ng.ru",
+            "https://www.book1ng.ru",
+            "http://localhost:3000",
+        ],
         allow_credentials=True,
-        allow_methods=["GET", "POST", "PUT", "DELETE"],
+        allow_methods=["*"],
         allow_headers=["*"],
     )
