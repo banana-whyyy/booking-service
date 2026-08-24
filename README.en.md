@@ -1,5 +1,11 @@
 # Booking Service
+[![Deploy Status](https://img.shields.io/badge/demo-live-brightgreen)](https://book1ng.ru/docs)
+[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688.svg)](https://fastapi.tiangolo)
+
 **English** | [Русский](README.md)
+
+**Live Swagger API Documentation:** [https://book1ng.ru/docs](https://book1ng.ru/docs)
 
 ## Tech Stack
 - Python
@@ -13,6 +19,7 @@
 - **Race Condition Protection:** Room booking utilizes database-level `SELECT FOR UPDATE` locks to eliminate double-booking issues.
 - **Background Tasks:** Email notifications and PDF generation are offloaded to Celery background workers via Redis.
 - **JWT Auth:** Implements Access/Refresh token authentication mechanism.
+- **Security:** FastAPI runs asynchronously, and passwords are hashed using bcrypt.
 
 ## Project Structure
 ```
@@ -43,7 +50,16 @@ app/
 └── tasks.py             # Email sending and PDF generation
 ```
 
-## Quick Start
+## Usage and Quick Start
+### Production (Deployed)
+
+The service is live and publicly accessible:
+
+- Interactive Documentation (Swagger UI): https://book1ng.ru/docs
+
+- Base API URL: https://book1ng.ru
+
+## Local Setup
 
 ### With Docker (Recommended)
 ```bash

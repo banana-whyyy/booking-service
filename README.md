@@ -1,5 +1,13 @@
 # Booking Service
+[![Deploy Status](https://img.shields.io/badge/demo-live-brightgreen)](https://book1ng.ru/docs)
+[![Python](https://img.shields.io/badge/Python-3.10+-blue.svg)](https://www.python.org/)
+[![FastAPI](https://img.shields.io/badge/FastAPI-0.100+-009688.svg)](https://fastapi.tiangolo)
+
+
 [English](README.en.md) | **Русский**
+
+
+**Live Swagger API Documentation:** [https://book1ng.ru/docs](https://book1ng.ru/docs)
 
 ## Стек технологий
 - Python
@@ -43,7 +51,16 @@ app/
         └── tasks.py     # Отправка писем и генерация PDF
 ```
 
-## Быстрый старт
+## Использование и Быстрый старт
+### Production (Деплой)
+
+Сервис развернут и доступен публично:
+
+- Интерактивная документация (Swagger UI): https://book1ng.ru/docs
+
+- Базовый URL для API: https://book1ng.ru
+
+## Локальный запуск
 
 ### С Docker (рекомендуется)
 ``` bash
