@@ -24,8 +24,6 @@ async def add_room(
             detail="Room with this name already exists",
         )
     new_room = await create_room(db, room)
-    await db.commit()
-    await db.refresh(new_room)
     return new_room
 
 
@@ -65,8 +63,6 @@ async def modify_room(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Room not found",
         )
-    await db.commit()
-    await db.refresh(updated)
     return updated
 
 
@@ -82,6 +78,5 @@ async def remove_room(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Room not found",
         )
-    await db.commit()
     return None
     

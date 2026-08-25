@@ -20,8 +20,6 @@ async def add_booking(
     current_user: User = Depends(get_current_user),
 ):
     new_booking = await create_booking_secure(db, booking, current_user.id)
-    await db.commit()
-    await db.refresh(new_booking)
     notification_payload = {
         "booking_id": new_booking.id,
         "username": current_user.username, 
@@ -65,5 +63,4 @@ async def remove_booking(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Booking not found or access denied",
         )
-    await db.commit()
     return None

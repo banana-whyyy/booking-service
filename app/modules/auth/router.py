@@ -36,8 +36,6 @@ async def register(user: UserCreate, db: AsyncSession = Depends(get_db)):
     
     new_user = await create_user(db, user)
     
-    await db.commit()
-    await db.refresh(new_user)
     return new_user
 
 
@@ -57,7 +55,6 @@ async def login(form_data: OAuth2PasswordRequestForm = Depends(), db: AsyncSessi
     refresh_token = create_refresh_token(data=refresh_payload)
 
     await register_refresh_token_db(db, token=refresh_token, user_id=user.id)
-    await db.commit()
 
     return TokenResponse(
         access_token=access_token,
@@ -83,8 +80,8 @@ async def refresh(refresh_token: str, db: AsyncSession = Depends(get_db)):
         )
     
     if token.is_used:
-        async with db.begin():
-            await delete_all_user_refresh_tokens(db, user_id=token.user_id)
+        await delete_all_user_refresh_tokens(db, user_id=token.user_id)
+        await db.commit()
         raise HTTPException(
             status_code=status.HTTP_401_UNAUTHORIZED,
             detail="Security alert. Session compromised"
@@ -98,7 +95,6 @@ async def refresh(refresh_token: str, db: AsyncSession = Depends(get_db)):
     new_refresh_token = create_refresh_token(data=new_payload)
 
     await register_refresh_token_db(db, token=new_refresh_token, user_id=token.user_id)
-    await db.commit()
     
     return TokenResponse(
         access_token=access_token,
