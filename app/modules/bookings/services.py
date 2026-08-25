@@ -1,5 +1,5 @@
 from fastapi import HTTPException, status
-from sqlalchemy import select
+from sqlalchemy import select, func
 from sqlalchemy.ext.asyncio import AsyncSession
 from datetime import datetime
 
@@ -20,8 +20,9 @@ async def create_booking_secure(
     booking_data: BookingCreate,
     user_id: int
 ) -> Booking:
-    room = await db.execute(select(Room).where(Room.id == booking_data.room_id).with_for_update())
-    if not room.scalar_one_or_none():
+    await db.execute(select(func.pg_advisory_xact_lock(booking_data.room_id)))
+    room = await db.scalar(select(Room).where(Room.id == booking_data.room_id))
+    if not room:
         raise HTTPException(
             status_code=status.HTTP_404_NOT_FOUND,
             detail="Room not found"
@@ -42,7 +43,7 @@ async def create_booking_secure(
         )
 
     db_user_result = await db.execute(
-        select(User).where(User.id == user_id).with_for_update()
+        select(User).where(User.id == user_id)
     )
     db_user = db_user_result.scalar_one()
 
