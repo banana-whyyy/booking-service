@@ -17,7 +17,6 @@ app = FastAPI(
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
-# В проде поменять middleware allow_origins 
 register_middlewares(app)
 
 app.include_router(auth_router)
