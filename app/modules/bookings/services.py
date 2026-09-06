@@ -20,38 +20,57 @@ async def create_booking_secure(
     booking_data: BookingCreate,
     user_id: int
 ) -> Booking:
-    await db.execute(select(func.pg_advisory_xact_lock(booking_data.room_id)))
-    room = await db.scalar(select(Room).where(Room.id == booking_data.room_id))
-    if not room:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND,
-            detail="Room not found"
+    async with db.begin():
+        room = await db.scalar(
+            select(Room)
+            .where(Room.id == booking_data.room_id)
+            .with_for_update()
         )
 
-    conditions = get_time_intersection_conditions(booking_data.time_start, booking_data.time_end)
-    intersects = await db.execute(
-        select(Booking).where(
-            Booking.room_id == booking_data.room_id,
-            *conditions
-        )
-    )
+        if room is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Room not found",
+            )
 
-    if intersects.scalar() is not None:
-        raise HTTPException(
-            status_code=status.HTTP_409_CONFLICT,
-            detail="This time is already booked"
+        conditions = get_time_intersection_conditions(
+            booking_data.time_start,
+            booking_data.time_end,
         )
 
-    db_user_result = await db.execute(
-        select(User).where(User.id == user_id)
-    )
-    db_user = db_user_result.scalar_one()
+        intersects = await db.scalar(
+            select(Booking).where(
+                Booking.room_id == booking_data.room_id,
+                *conditions,
+            )
+        )
 
-    if db_user.bonus_balance > 0:
-        db_user.bonus_balance = 0
+        if intersects is not None:
+            raise HTTPException(
+                status_code=status.HTTP_409_CONFLICT,
+                detail="This time is already booked",
+            )
 
-    
-    return await create_booking(db, booking_data, db_user.id)
+        db_user = await db.scalar(
+            select(User).where(User.id == user_id)
+        )
+
+        if db_user is None:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="User not found",
+            )
+
+        if db_user.bonus_balance > 0:
+            db_user.bonus_balance = 0
+
+        booking = await create_booking(
+            db=db,
+            booking_data=booking_data,
+            user_id=db_user.id,
+        )
+
+    return booking
 
 
 async def get_booking_secure(
