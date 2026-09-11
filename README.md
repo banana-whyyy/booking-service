@@ -36,6 +36,7 @@ app/
     │   ├── router.py
     │   ├── models.py    
     │   ├── schemas.py
+    │   ├── crud.py
     │   └── security.py
     ├── rooms/           # Переговорки, фильтры и поиск
     │   ├── router.py
@@ -44,11 +45,13 @@ app/
     │   └── crud.py
     ├── bookings/        # Транзакции, SELECT FOR UPDATE, логика брони
     │   ├── router.py
+    │   ├── crud.py
     │   ├── models.py
     │   ├── schemas.py
     │   └── services.py  # Защита от Race Conditions
     └── notifications/   # Фоновые задачи (Celery)
-        └── tasks.py     # Отправка писем и генерация PDF
+        ├── pdf.py       # Генерация PDF
+        └── tasks.py     # Отправка писем 
 ```
 
 ## Использование и Быстрый старт
